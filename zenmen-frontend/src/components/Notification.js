@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import io from "socket.io-client";
-
-const socket = io("http://localhost:5000");
 
 const Notification = () => {
   const [notifications, setNotifications] = useState([]);
+  const socket = io("http://localhost:5000");
 
   useEffect(() => {
     socket.on("notification", (data) => {
@@ -13,16 +12,22 @@ const Notification = () => {
     });
 
     return () => {
-      socket.off("notification");
+      socket.disconnect();
     };
-  }, []);
+  }, [socket]);
 
   return (
     <div>
       <h2>Notifications</h2>
       <ul>
         {notifications.map((notification, index) => (
-          <li key={index}>
+          <li
+            key={index}
+            style={getNotificationStyle(
+              // @ts-ignore
+              notification.type
+            )}
+          >
             {
               // @ts-ignore
               notification.message
@@ -32,6 +37,17 @@ const Notification = () => {
       </ul>
     </div>
   );
+};
+
+const getNotificationStyle = (type) => {
+  switch (type) {
+    case "connection":
+      return { color: "green" };
+    case "disconnection":
+      return { color: "red" };
+    default:
+      return { color: "black" };
+  }
 };
 
 export default Notification;
